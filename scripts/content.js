@@ -7,9 +7,12 @@
     console.log('Twitter Clean View 扩展已加载');
     
     // 配置选项
-    const CONFIG = {
+    let CONFIG = {
         // 是否启用调试模式
         DEBUG: false,
+        
+        // 扩展是否启用
+        ENABLED: true,
         
         // 需要隐藏的元素选择器（作为CSS的补充）
         HIDE_SELECTORS: [
@@ -19,7 +22,11 @@
             'aside[aria-label="关注推荐"]',
             // 完全隐藏左侧导航栏
             'header[role="banner"]',
-            'nav[aria-label="主要"]'
+            'nav[aria-label="主要"]',
+            // 隐藏「为你推荐」标签
+            '[role="tablist"] [role="tab"]:first-child',
+            '[data-testid="HomeTab"]:first-child',
+            'a[href="/home"]:not([href="/home/following"])'
         ],
         
         // 监听变化的延迟时间（毫秒）
@@ -86,7 +93,7 @@
                             
                             if (img.classList.contains('expanded')) {
                                 img.classList.remove('expanded');
-                                img.style.maxHeight = '120px';
+                                img.style.maxHeight = '80px';
                                 debugLog('收起图片');
                             } else {
                                 img.classList.add('expanded');
@@ -132,12 +139,12 @@
                 debugLog('调整主内容区域布局');
             }
             
-            // 调整中心内容容器，大幅增加宽度
+            // 调整中心内容容器，最大化宽度显示更多内容
             const centerContent = document.querySelector('main[role="main"]');
             if (centerContent) {
-                centerContent.style.maxWidth = '1200px';
+                centerContent.style.maxWidth = '1400px';
                 centerContent.style.margin = '0 auto';
-                centerContent.style.padding = '0 20px';
+                centerContent.style.padding = '0 15px';
                 debugLog('调整中心内容容器');
             }
             
@@ -157,6 +164,11 @@
     
     // 处理动态加载的内容
     function processNewContent() {
+        if (!CONFIG.ENABLED) {
+            debugLog('扩展已禁用，跳过处理');
+            return;
+        }
+        
         hideElements();
         optimizeTweets();
         adjustLayout();
@@ -274,9 +286,120 @@
         });
     }
     
-    // 添加自定义样式（作为CSS的补充）
+
+    
+    // 启用/禁用扩展功能
+    function enableExtension() {
+        CONFIG.ENABLED = true;
+        
+        // 重新应用样式
+        addCustomStyles();
+        processNewContent();
+        
+        debugLog('扩展已启用');
+    }
+    
+    function disableExtension() {
+        CONFIG.ENABLED = false;
+        
+        // 移除所有应用的样式修改
+        restoreOriginalStyles();
+        
+        debugLog('扩展已禁用');
+    }
+    
+    // 恢复原始样式
+    function restoreOriginalStyles() {
+        try {
+            // 移除隐藏的元素样式
+            CONFIG.HIDE_SELECTORS.forEach(selector => {
+                try {
+                    const elements = document.querySelectorAll(selector);
+                    elements.forEach(element => {
+                        element.style.display = '';
+                        element.style.width = '';
+                        element.style.minWidth = '';
+                    });
+                } catch (error) {
+                    // 忽略错误
+                }
+            });
+            
+            // 恢复布局样式
+            const primaryColumn = document.querySelector('[data-testid="primaryColumn"]');
+            if (primaryColumn) {
+                primaryColumn.style.maxWidth = '';
+                primaryColumn.style.width = '';
+                primaryColumn.style.marginLeft = '';
+                primaryColumn.style.paddingLeft = '';
+            }
+            
+            const centerContent = document.querySelector('main[role="main"]');
+            if (centerContent) {
+                centerContent.style.maxWidth = '';
+                centerContent.style.margin = '';
+                centerContent.style.padding = '';
+            }
+            
+            const body = document.body;
+            if (body) {
+                body.style.paddingLeft = '';
+            }
+            
+            // 移除自定义样式表
+            const customStyles = document.querySelectorAll('style[data-twitter-clean-view]');
+            customStyles.forEach(style => style.remove());
+            
+            debugLog('已恢复原始样式');
+        } catch (error) {
+            if (CONFIG.DEBUG) {
+                console.warn('[Twitter Clean View] 恢复样式时出错:', error);
+            }
+        }
+    }
+    
+    // 监听来自popup的消息
+    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+        if (message.action === 'toggleExtension') {
+            if (message.enabled) {
+                enableExtension();
+            } else {
+                disableExtension();
+            }
+            sendResponse({ success: true });
+        }
+        return true;
+    });
+    
+    // 从存储中获取设置
+    async function loadSettings() {
+        try {
+            const result = await chrome.storage.sync.get(['twitterCleanViewEnabled']);
+            const isEnabled = result.twitterCleanViewEnabled !== false; // 默认启用
+            
+            CONFIG.ENABLED = isEnabled;
+            
+            debugLog('设置已加载:', { enabled: isEnabled });
+        } catch (error) {
+            if (CONFIG.DEBUG) {
+                console.warn('[Twitter Clean View] 加载设置失败:', error);
+            }
+            // 使用默认设置
+            CONFIG.ENABLED = true;
+        }
+    }
+    
+    // 修改addCustomStyles函数，添加标识
     function addCustomStyles() {
+        if (!CONFIG.ENABLED) return;
+        
+        const existingStyle = document.querySelector('style[data-twitter-clean-view]');
+        if (existingStyle) {
+            existingStyle.remove();
+        }
+        
         const style = document.createElement('style');
+        style.setAttribute('data-twitter-clean-view', 'true');
         style.textContent = `
             /* 确保隐藏的元素不占用空间 */
             .twitter-clean-hidden {
@@ -334,10 +457,21 @@
         debugLog('添加自定义样式');
     }
     
-    // 启动扩展
-    addCustomStyles();
-    initialize();
+    // 异步初始化
+    async function asyncInitialize() {
+        await loadSettings();
+        
+        if (CONFIG.ENABLED) {
+            addCustomStyles();
+            initialize();
+        } else {
+            debugLog('扩展已禁用，跳过初始化');
+        }
+    }
     
-    debugLog('Twitter Clean View 扩展初始化完成');
+    // 启动扩展
+    asyncInitialize();
+    
+    debugLog('Twitter Clean View 扩展已加载');
     
 })(); 

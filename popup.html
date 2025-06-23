@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Twitter Clean View</title>
+    <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+    <div class="popup-container">
+        <div class="header">
+            <div class="icon">🐦</div>
+            <div class="title">
+                <h1>Twitter Clean View</h1>
+                <p class="version">v1.4.0</p>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div class="status-section">
+                <div class="status-info">
+                    <span class="status-text" id="statusText">扩展已启用</span>
+                    <div class="status-indicator" id="statusIndicator"></div>
+                </div>
+            </div>
+            
+            <div class="toggle-section">
+                <div class="toggle-container">
+                    <label class="toggle-label">
+                        <input type="checkbox" id="enableToggle" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <span class="toggle-text">启用插件功能</span>
+                </div>
+            </div>
+            
+            <div class="features-section">
+                <h3>当前功能</h3>
+                <ul class="features-list">
+                    <li>✅ 隐藏右侧推荐栏</li>
+                    <li>✅ 完全隐藏左侧导航栏</li>
+                    <li>✅ 隐藏「为你推荐」标签</li>
+                    <li>✅ 推文区域宽度 1400px</li>
+                    <li>✅ 紧凑图片预览 (80px)</li>
+                    <li>✅ 极致内容密度</li>
+                </ul>
+            </div>
+            
+            <div class="actions-section">
+                <button id="refreshPage" class="action-btn">
+                    🔄 刷新页面
+                </button>
+                <button id="openSettings" class="action-btn secondary">
+                    ⚙️ 高级设置
+                </button>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>仅在 x.com/home 页面生效</p>
+        </div>
+    </div>
+    
+    <script src="popup.js"></script>
+</body>
+</html> 

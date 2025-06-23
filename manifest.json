@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Twitter Clean View",
-  "version": "1.2.0",
+  "version": "1.4.0",
   "description": "定制化显示推特页面，隐藏不需要的元素并美化界面",
   
   "content_scripts": [
@@ -13,8 +13,15 @@
     }
   ],
   
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Twitter Clean View - 点击开启/关闭"
+  },
+  
   "permissions": [
-    "activeTab"
+    "activeTab",
+    "storage",
+    "tabs"
   ],
   
   "host_permissions": [
