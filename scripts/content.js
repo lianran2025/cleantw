@@ -23,10 +23,12 @@
             // 完全隐藏左侧导航栏
             'header[role="banner"]',
             'nav[aria-label="主要"]',
-            // 隐藏「为你推荐」标签
-            '[role="tablist"] [role="tab"]:first-child',
-            '[data-testid="HomeTab"]:first-child',
-            'a[href="/home"]:not([href="/home/following"])'
+            // 隐藏「为你推荐」标签页
+            'div[aria-label="时间线：推荐"]',
+            'div[aria-label="时间线：For you"]',
+            // 隐藏「发现更多」模块
+            '[aria-label="发现更多推文"]',
+            '[aria-label="Discover more tweets"]'
         ],
         
         // 监听变化的延迟时间（毫秒）
@@ -93,7 +95,7 @@
                             
                             if (img.classList.contains('expanded')) {
                                 img.classList.remove('expanded');
-                                img.style.maxHeight = '80px';
+                                img.style.maxHeight = '120px';
                                 debugLog('收起图片');
                             } else {
                                 img.classList.add('expanded');
@@ -139,12 +141,12 @@
                 debugLog('调整主内容区域布局');
             }
             
-            // 调整中心内容容器，最大化宽度显示更多内容
+            // 调整中心内容容器，大幅增加宽度
             const centerContent = document.querySelector('main[role="main"]');
             if (centerContent) {
-                centerContent.style.maxWidth = '1400px';
+                centerContent.style.maxWidth = '1200px';
                 centerContent.style.margin = '0 auto';
-                centerContent.style.padding = '0 15px';
+                centerContent.style.padding = '0 20px';
                 debugLog('调整中心内容容器');
             }
             
@@ -172,6 +174,109 @@
         hideElements();
         optimizeTweets();
         adjustLayout();
+        hideRecommendedTab();
+        hideDiscoverMore();
+    }
+    
+    // 隐藏「为你推荐」标签页，只保留「关注」
+    function hideRecommendedTab() {
+        try {
+            // 查找标签页容器
+            const tablist = document.querySelector('[data-testid="primaryColumn"] div[role="tablist"]');
+            if (tablist) {
+                const tabs = tablist.querySelectorAll('div[role="tab"]');
+                
+                // 隐藏第一个标签页（为你推荐）
+                if (tabs.length >= 2) {
+                    const firstTab = tabs[0];
+                    if (firstTab && firstTab.style.display !== 'none') {
+                        firstTab.style.display = 'none';
+                        debugLog('隐藏「为你推荐」标签页');
+                    }
+                    
+                    // 确保第二个标签页（关注）显示
+                    const secondTab = tabs[1];
+                    if (secondTab) {
+                        secondTab.style.display = 'flex';
+                        // 如果没有激活，则激活关注标签页
+                        if (!secondTab.getAttribute('aria-selected') || secondTab.getAttribute('aria-selected') === 'false') {
+                            secondTab.click();
+                            debugLog('自动切换到「关注」标签页');
+                        }
+                    }
+                }
+            }
+            
+            // 额外隐藏可能的推荐相关元素
+            const recommendedElements = document.querySelectorAll('[aria-label*="推荐"], [aria-label*="For you"]');
+            recommendedElements.forEach(element => {
+                if (element.closest('[role="tab"]') && element.style.display !== 'none') {
+                    element.style.display = 'none';
+                    debugLog('隐藏推荐相关元素');
+                }
+            });
+        } catch (error) {
+            if (CONFIG.DEBUG) {
+                console.warn('[Twitter Clean View] 处理标签页时出错:', error);
+            }
+        }
+    }
+    
+    // 隐藏推文详情页的「发现更多」模块
+    function hideDiscoverMore() {
+        try {
+            // 检查是否在推文详情页
+            const isDetailPage = window.location.pathname.includes('/status/');
+            
+            if (isDetailPage) {
+                // 查找「发现更多」相关元素
+                const discoverSelectors = [
+                    '[aria-label*="发现更多"]',
+                    '[aria-label*="Discover more"]',
+                    'div[data-testid="cellInnerDiv"]:has(span[text*="发现更多"])',
+                    'div[data-testid="cellInnerDiv"]:has(span[text*="Discover more"])'
+                ];
+                
+                discoverSelectors.forEach(selector => {
+                    try {
+                        const elements = document.querySelectorAll(selector);
+                        elements.forEach(element => {
+                            // 检查是否是推文详情页下方的推荐内容
+                            const isAfterTweet = element.closest('section[aria-label*="时间线"]') || 
+                                                element.previousElementSibling?.querySelector('[data-testid="tweet"]');
+                            
+                            if (isAfterTweet && element.style.display !== 'none') {
+                                element.style.display = 'none';
+                                debugLog('隐藏「发现更多」模块');
+                            }
+                        });
+                    } catch (e) {
+                        // 忽略选择器错误
+                    }
+                });
+                
+                // 隐藏推文下方的相关推文推荐
+                const tweetDetails = document.querySelectorAll('[data-testid="tweetDetail"], article[data-testid="tweet"]');
+                tweetDetails.forEach(tweetDetail => {
+                    let nextElement = tweetDetail.parentElement?.nextElementSibling;
+                    while (nextElement) {
+                        // 检查是否是推荐内容
+                        if (nextElement.querySelector('[data-testid="tweet"]') && 
+                            !nextElement.querySelector('[data-testid="tweetDetail"]')) {
+                            if (nextElement.style.display !== 'none') {
+                                nextElement.style.display = 'none';
+                                debugLog('隐藏推文详情页推荐内容');
+                            }
+                        }
+                        nextElement = nextElement.nextElementSibling;
+                    }
+                });
+            }
+        } catch (error) {
+            if (CONFIG.DEBUG) {
+                console.warn('[Twitter Clean View] 处理发现更多模块时出错:', error);
+            }
+        }
     }
     
     // 防抖函数
@@ -345,6 +450,21 @@
             if (body) {
                 body.style.paddingLeft = '';
             }
+            
+            // 恢复标签页显示
+            const tablist = document.querySelector('[data-testid="primaryColumn"] div[role="tablist"]');
+            if (tablist) {
+                const tabs = tablist.querySelectorAll('div[role="tab"]');
+                tabs.forEach(tab => {
+                    tab.style.display = '';
+                });
+            }
+            
+            // 恢复「发现更多」模块
+            const discoverElements = document.querySelectorAll('[aria-label*="发现更多"], [aria-label*="Discover more"]');
+            discoverElements.forEach(element => {
+                element.style.display = '';
+            });
             
             // 移除自定义样式表
             const customStyles = document.querySelectorAll('style[data-twitter-clean-view]');
