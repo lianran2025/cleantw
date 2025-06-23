@@ -22,10 +22,14 @@
   display: none !important;
 }
 
-/* 隐藏左侧导航栏的一些不常用项目 */
-[data-testid="AppTabBar_Explore_Link"],
-[data-testid="AppTabBar_Communities_Link"] {
+/* 完全隐藏左侧导航栏 */
+header[role="banner"],
+nav[aria-label="主要"],
+[data-testid="sidebarColumn"]:first-child,
+div[data-testid="sidebarColumn"]:not(:last-child) {
   display: none !important;
+  width: 0 !important;
+  min-width: 0 !important;
 }
 
 /* ==================== 视觉美化 ==================== */
@@ -47,8 +51,43 @@
   margin-bottom: 4px !important;
 }
 
-/* 调整主内容区域宽度，由于隐藏了右侧栏 */
+/* 调整整体页面布局，完全隐藏左侧栏后的空间利用 */
+body {
+  padding-left: 0 !important;
+}
+
+/* 主容器占用全宽 */
+#react-root,
+#react-root > div,
+#react-root > div > div {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* 调整主内容区域宽度 */
 [data-testid="primaryColumn"] {
+  max-width: 100% !important;
+  width: 100% !important;
+  margin-left: 0 !important;
+  padding-left: 0 !important;
+}
+
+/* 增加推文区域的总体宽度 */
+main[role="main"] {
+  max-width: 1200px !important;
+  width: 100% !important;
+  margin: 0 auto !important;
+  padding: 0 20px !important;
+}
+
+/* 调整推文容器宽度 */
+[data-testid="tweet"] {
+  max-width: 100% !important;
+  width: 100% !important;
+}
+
+/* 调整顶部搜索栏等元素的宽度 */
+div[data-testid="SearchBox_Search_Input"] {
   max-width: 100% !important;
 }
 
@@ -97,4 +136,59 @@ article[data-testid="tweet"] {
 
 [data-theme="dark"] [data-testid="tweet"]:hover {
   box-shadow: 0 4px 8px rgba(255, 255, 255, 0.1) !important;
+}
+
+/* ==================== 图片智能预览 ==================== */
+
+/* 推文中的图片默认显示为小预览 */
+[data-testid="tweet"] [data-testid="tweetPhoto"] img,
+[data-testid="tweet"] [data-testid="tweetMedia"] img,
+[data-testid="tweet"] div[data-testid="tweetPhoto"] img {
+  max-height: 120px !important;
+  width: auto !important;
+  object-fit: cover !important;
+  border-radius: 8px !important;
+  transition: all 0.3s ease-in-out !important;
+  cursor: pointer !important;
+}
+
+/* 鼠标悬停时恢复正常大小 */
+[data-testid="tweet"] [data-testid="tweetPhoto"]:hover img,
+[data-testid="tweet"] [data-testid="tweetMedia"]:hover img,
+[data-testid="tweet"] div[data-testid="tweetPhoto"]:hover img {
+  max-height: 400px !important;
+  transform: scale(1.02) !important;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2) !important;
+  z-index: 10 !important;
+}
+
+/* 图片容器样式优化 */
+[data-testid="tweet"] [data-testid="tweetPhoto"],
+[data-testid="tweet"] [data-testid="tweetMedia"],
+[data-testid="tweet"] div[data-testid="tweetPhoto"] {
+  overflow: hidden !important;
+  border-radius: 8px !important;
+  margin: 8px 0 !important;
+}
+
+/* 多图片布局优化 */
+[data-testid="tweet"] div[role="group"] img {
+  max-height: 100px !important;
+  margin: 2px !important;
+}
+
+[data-testid="tweet"] div[role="group"]:hover img {
+  max-height: 200px !important;
+}
+
+/* 视频缩略图也应用相同效果 */
+[data-testid="tweet"] video {
+  max-height: 120px !important;
+  width: auto !important;
+  transition: all 0.3s ease-in-out !important;
+}
+
+[data-testid="tweet"] video:hover {
+  max-height: 300px !important;
+  transform: scale(1.02) !important;
 } 

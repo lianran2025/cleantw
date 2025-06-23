@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Twitter Clean View",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "定制化显示推特页面，隐藏不需要的元素并美化界面",
   
   "content_scripts": [
