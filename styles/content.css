@@ -1,0 +1,100 @@
+/* Twitter Clean View - 定制化样式 */
+
+/* ==================== 隐藏不需要的元素 ==================== */
+
+/* 隐藏右侧推荐用户栏 */
+[data-testid="sidebarColumn"] {
+  display: none !important;
+}
+
+/* 隐藏右侧边栏（包括趋势、推荐关注等） */
+[aria-label="时间线：趋势"] {
+  display: none !important;
+}
+
+/* 隐藏推广推文 */
+[data-testid="placementTracking"] {
+  display: none !important;
+}
+
+/* 隐藏"你可能喜欢"推荐 */
+[aria-label="你可能喜欢"] {
+  display: none !important;
+}
+
+/* 隐藏左侧导航栏的一些不常用项目 */
+[data-testid="AppTabBar_Explore_Link"],
+[data-testid="AppTabBar_Communities_Link"] {
+  display: none !important;
+}
+
+/* ==================== 视觉美化 ==================== */
+
+/* 增加推文之间的间距 */
+[data-testid="tweet"] {
+  margin-bottom: 16px !important;
+  padding: 16px !important;
+}
+
+/* 增加推文内容的行间距 */
+[data-testid="tweetText"] {
+  line-height: 1.6 !important;
+  margin: 8px 0 !important;
+}
+
+/* 优化推文用户名显示 */
+[data-testid="User-Name"] {
+  margin-bottom: 4px !important;
+}
+
+/* 调整主内容区域宽度，由于隐藏了右侧栏 */
+[data-testid="primaryColumn"] {
+  max-width: 100% !important;
+}
+
+/* 优化推文容器的背景和边框 */
+article[data-testid="tweet"] {
+  background-color: rgba(255, 255, 255, 0.98) !important;
+  border-radius: 12px !important;
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* 暗色模式适配 */
+[data-theme="dark"] article[data-testid="tweet"] {
+  background-color: rgba(21, 32, 43, 0.98) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+/* 优化头像显示 */
+[data-testid="Tweet-User-Avatar"] {
+  margin-right: 12px !important;
+}
+
+/* 调整推文操作按钮的间距 */
+[role="group"] {
+  margin-top: 12px !important;
+}
+
+/* ==================== 响应式优化 ==================== */
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+  [data-testid="tweet"] {
+    margin-bottom: 12px !important;
+    padding: 12px !important;
+  }
+}
+
+/* ==================== 动画和过渡效果 ==================== */
+
+/* 添加平滑过渡效果 */
+[data-testid="tweet"]:hover {
+  transform: translateY(-2px) !important;
+  transition: all 0.2s ease-in-out !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1) !important;
+}
+
+[data-theme="dark"] [data-testid="tweet"]:hover {
+  box-shadow: 0 4px 8px rgba(255, 255, 255, 0.1) !important;
+} 
